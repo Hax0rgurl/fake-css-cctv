@@ -1,4 +1,6 @@
-<!DOCTYPE html><html><head><base href="http://surveillance-system.local/">
+<!DOCTYPE html>
+<html>
+<head>
 <title>CCTV Monitoring Station Alpha-7</title>
 <style>
     body {
@@ -40,6 +42,7 @@
         color: #ff0000;
         font-weight: bold;
         animation: blink 1s infinite;
+        margin-right: 10px;
     }
     
     .recording-dot::before {
@@ -61,6 +64,7 @@
         animation: scan 3s linear infinite;
         box-shadow: 0 0 10px rgba(255,255,255,0.3);
         z-index: 2;
+        pointer-events: none;
     }
     
     .scanlines {
@@ -104,7 +108,7 @@
         z-index: 2;
     }
     
-    .cctv-container img {
+    .cctv-container img, .cctv-container video {
         width: 100%;
         display: block;
         position: relative;
@@ -306,92 +310,6 @@
 </section>
 
 <script>
-const GIPHY_API_KEY = 'YOUR_GIPHY_API_KEY'; 
-const giphyQueries = [
-  'security camera',
-  'cctv footage',
-  'surveillance camera',
-  'night vision camera',
-  'security footage',
-  'parking lot camera',
-  'elevator camera',
-  'hallway camera',
-  'security camera',
-  'security camera',
-  'security camera',
-  'security camera',
-];
-
-const fallbackImages = [
-  'https://media.giphy.com/media/3o7TKKJhxU7VfOdD3m/giphy.gif',
-];
-
-async function fetchGiphyGif(query, index) {
-    try {
-        const response = await fetch(
-            `https://api.giphy.com/v1/gifs/random?api_key=${GIPHY_API_KEY}&tag=${encodeURIComponent(query)}&rating=g`
-        );
-        const data = await response.json();
-        if (data.data && data.data.images && data.data.images.fixed_height) {
-            console.log('Loaded GIF for camera', index + 1, data.data.images.fixed_height.url);
-            return data.data.images.fixed_height.url;
-        } else {
-            throw new Error('No GIF found in response');
-        }
-    } catch (error) {
-        console.error('Error fetching GIF for camera', index + 1, error);
-        return fallbackImages[index % fallbackImages.length];
-    }
-}
-
-async function initializeGifs() {
-    const timestamp = new Date().getTime();
-    const gif2 = document.getElementById('gif2');
-    const gif3 = document.getElementById('gif3');
-    if (gif2) {
-        gif2.src = '/a/214cad1f-de82-434c-bfb7-ba71ae9fb606?t=' + timestamp;
-    }
-    if (gif3) {
-        gif3.src = '/a/f33ca485-b095-4ca7-a1e1-7deb73bd3fe7?t=' + timestamp;
-    }
-
-    for(let i = 4; i <= 12; i++) {
-        const mediaElement = document.getElementById(`gif${i}`);
-        let query;
-        if (i === 10) {
-            query = 'backrooms';
-        } else {
-            query = giphyQueries[(i - 1) % giphyQueries.length];
-        }
-        try {
-            const gifUrl = await fetchGiphyGif(query, i - 1);
-            if (gifUrl && mediaElement) {
-                mediaElement.src = gifUrl;
-            }
-        } catch (error) {
-            console.error(`Error loading GIF for camera ${i}:`, error);
-            if (mediaElement) {
-                mediaElement.src = fallbackImages[(i - 1) % fallbackImages.length];
-            }
-        }
-    }
-}
-
-function refreshStaticGifs() {
-    const timestamp = new Date().getTime();
-    const gif2 = document.getElementById('gif2');
-    const gif3 = document.getElementById('gif3');
-
-    if (gif2 && gif2.src) {
-        const src2 = gif2.src.split('?')[0];
-        gif2.src = src2 + '?t=' + timestamp;
-    }
-    if (gif3 && gif3.src) {
-        const src3 = gif3.src.split('?')[0];
-        gif3.src = src3 + '?t=' + timestamp;
-    }
-}
-
 function updateTimestamps() {
     const timestamps = document.querySelectorAll('.cctv-timestamp');
     timestamps.forEach((timestamp, index) => {
@@ -407,46 +325,49 @@ function addRandomGlitches() {
         if (Math.random() < 0.005) {
             const mediaElement = container.querySelector('img, video');
             if (mediaElement) {
-                const originalFilter = mediaElement.style.filter;
-                mediaElement.style.filter = `grayscale(100%) brightness(${1 + Math.random() * 0.5}) contrast(${1 + Math.random() * 0.5})`;
+                // CSS defines it as: grayscale(100%) brightness(1.2) contrast(1.4)
+
+                mediaElement.style.filter = `grayscale(100%) brightness(${1 + Math.random() * 0.5}) contrast(${1 + Math.random() * 0.5}) hue-rotate(${Math.random() * 360}deg)`;
+
+                // Add some transform glitch too
+                const originalTransform = mediaElement.style.transform;
+                mediaElement.style.transform = `translate(${Math.random() * 10 - 5}px, ${Math.random() * 10 - 5}px) scale(${1 + Math.random() * 0.1})`;
+
                 setTimeout(() => {
-                    mediaElement.style.filter = originalFilter;
+                    mediaElement.style.filter = '';
+                    mediaElement.style.transform = '';
                 }, 50 + Math.random() * 100);
             }
         }
     });
 }
 
-async function refreshGifs() {
-    const containers = document.querySelectorAll('.cctv-container');
-    const randomIndex = Math.floor(Math.random() * (containers.length - 1)) + 1;
-    const randomContainer = containers[randomIndex];
-    const mediaElement = randomContainer.querySelector('img, video');
-    let query;
+function initVideos() {
+    const videos = document.querySelectorAll('video');
+    videos.forEach(video => {
+        video.muted = true; // Ensure autoplay works
+        // Random start time
+        video.addEventListener('loadedmetadata', () => {
+             if(video.duration) {
+                 video.currentTime = Math.random() * video.duration;
+             }
+        });
 
-    if (randomIndex + 1 === 10) {
-        query = 'backrooms';
-    } else {
-        query = giphyQueries[randomIndex % giphyQueries.length];
-    }
+        // If metadata already loaded
+        if(video.readyState >= 1 && video.duration) {
+             video.currentTime = Math.random() * video.duration;
+        }
 
-    const gifUrl = await fetchGiphyGif(query, randomIndex);
-    
-    if (gifUrl && mediaElement) {
-        mediaElement.src = gifUrl;
-    } else if (!mediaElement) {
-        console.error(`No media element found in container ${randomIndex + 1}`);
-    }
+        // Try to play
+        video.play().catch(e => console.log("Autoplay blocked", e));
+    });
 }
 
-initializeGifs();
-refreshStaticGifs();
 updateTimestamps();
 setInterval(updateTimestamps, 1000);
 setInterval(addRandomGlitches, 500);
-setInterval(refreshGifs, 10000);
-setInterval(refreshStaticGifs, 30000);
+initVideos();
+
 </script>
-
-
-</body></html>
+</body>
+</html>
