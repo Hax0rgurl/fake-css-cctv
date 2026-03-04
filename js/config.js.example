@@ -1,0 +1,21 @@
+window.APP_CONFIG = {
+    GIPHY_API_KEY: 'YOUR_GIPHY_API_KEY_HERE',
+    BASE_URL: 'http://surveillance-system.local/',
+    GIPHY_QUERIES: [
+        'security camera',
+        'cctv footage',
+        'surveillance camera',
+        'night vision camera',
+        'security footage',
+        'parking lot camera',
+        'elevator camera',
+        'hallway camera',
+        'security camera',
+        'security camera',
+        'security camera',
+        'security camera',
+    ],
+    FALLBACK_IMAGES: [
+        'https://media.giphy.com/media/3o7TKKJhxU7VfOdD3m/giphy.gif',
+    ]
+};
