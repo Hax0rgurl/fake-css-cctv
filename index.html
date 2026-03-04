@@ -392,11 +392,11 @@ function refreshStaticGifs() {
     }
 }
 
+const timestampElements = document.querySelectorAll('.cctv-timestamp');
 function updateTimestamps() {
-    const timestamps = document.querySelectorAll('.cctv-timestamp');
-    timestamps.forEach((timestamp, index) => {
-        const now = new Date();
-        const formattedDate = now.toISOString().replace('T', ' ').split('.')[0];
+    const now = new Date();
+    const formattedDate = now.toISOString().replace('T', ' ').split('.')[0];
+    timestampElements.forEach((timestamp, index) => {
         timestamp.textContent = `${formattedDate} | CAM_${String(index + 1).padStart(2, '0')}`;
     });
 }
