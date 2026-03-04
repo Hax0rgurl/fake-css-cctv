@@ -1,0 +1,10 @@
+{
+  "name": "cctv-surveillance",
+  "version": "1.0.0",
+  "description": "CCTV Monitoring Station with Giphy Proxy",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --env-file=.env server.js"
+  }
+}
